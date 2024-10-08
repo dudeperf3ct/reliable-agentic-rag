@@ -3,18 +3,19 @@
 from loguru import logger
 from typing import Any
 from bs4 import BeautifulSoup, NavigableString
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
-def extract_text_from_section(section):
-    """_summary_
+def extract_text_from_section(section) -> str:
+    """Extract text from section.
 
     Reference: https://github.com/ray-project/llm-applications/blob/main/rag/data.py#L8
 
     Args:
-        section: _description_
+        section: HTML content of the section
 
     Returns:
-        _description_
+        String containing all text in the section.
     """
     texts = []
     for elem in section.children:
@@ -29,13 +30,13 @@ def extract_text_from_section(section):
 
 
 def parse_section(section_content: str, url: str) -> dict[str, Any]:
-    """_summary_.
+    """Parse the section to get back dictionay of text and source.
 
     Args:
-        section_content: _description_
+        section_content: HTML of section.
 
     Returns:
-        _description_
+        Dictionary containing text and source uri
     """
     section_uri = section_content.find("a").get("href")
     if section_uri is not None:
@@ -48,13 +49,14 @@ def parse_section(section_content: str, url: str) -> dict[str, Any]:
 
 
 def parse_html(file_path: dict[str, str]) -> list[dict[str, Any]]:
-    """_summary_.
+    """Parse html file.
 
     Args:
-        file_path: _description_
+        file_path: Path to html file
 
     Returns:
-        _description_
+        Parsed html containing list of dictionary where
+        dictionary contains text and source uri for each section.
     """
     with open(file_path["path"], "r", encoding="utf-8") as file:
         html_content = file.read()
@@ -69,3 +71,29 @@ def parse_html(file_path: dict[str, str]) -> list[dict[str, Any]]:
             section_text = parse_section(section, url)
             contents.append(section_text)
     return contents
+
+
+def chunk_text(section, chunk_size, chunk_overlap) -> dict[str, Any]:
+    """Chunk text using RecursiveCharacterTextSplitter from langchain.
+
+    Args:
+        section: Text in the section
+        chunk_size: Chunk size
+        chunk_overlap: Chunk overlap
+
+    Returns:
+        Chunked text
+    """
+    text_splitter = RecursiveCharacterTextSplitter(
+        separators=["\n\n", "\n", " ", ""],
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        length_function=len,
+    )
+    chunks = text_splitter.create_documents(
+        texts=[section["text"]], metadatas=[{"source": section["source"]}]
+    )
+    return [
+        {"text": chunk.page_content, "source": chunk.metadata["source"]}
+        for chunk in chunks
+    ]

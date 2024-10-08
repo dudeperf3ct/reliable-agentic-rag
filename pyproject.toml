@@ -6,8 +6,16 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "beautifulsoup4>=4.12.3",
+    "datasets>=3.0.1",
+    "flagembedding>=1.2.11",
+    "langchain-text-splitters>=0.3.0",
     "loguru>=0.7.2",
+    "nltk>=3.9.1",
+    "peft>=0.13.0",
+    "pymilvus[model]>=2.4.7",
     "ray[data]>=2.37.0",
+    "scipy>=1.14.1",
+    "sentence-transformers>=3.1.1",
     "tqdm>=4.66.5",
 ]
 
