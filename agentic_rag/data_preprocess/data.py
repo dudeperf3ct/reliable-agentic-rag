@@ -1,9 +1,10 @@
 """Download dataset."""
 
-from loguru import logger
 from typing import Any
+
 from bs4 import BeautifulSoup, NavigableString
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from loguru import logger
 
 
 def extract_text_from_section(section) -> str:
@@ -16,6 +17,7 @@ def extract_text_from_section(section) -> str:
 
     Returns:
         String containing all text in the section.
+
     """
     texts = []
     for elem in section.children:
@@ -34,9 +36,11 @@ def parse_section(section_content: str, url: str) -> dict[str, Any]:
 
     Args:
         section_content: HTML of section.
+        url: URL of the page
 
     Returns:
         Dictionary containing text and source uri
+
     """
     section_uri = section_content.find("a").get("href")
     if section_uri is not None:
@@ -57,6 +61,7 @@ def parse_html(file_path: dict[str, str]) -> list[dict[str, Any]]:
     Returns:
         Parsed html containing list of dictionary where
         dictionary contains text and source uri for each section.
+
     """
     with open(file_path["path"], "r", encoding="utf-8") as file:
         html_content = file.read()
@@ -83,6 +88,7 @@ def chunk_text(section, chunk_size, chunk_overlap) -> dict[str, Any]:
 
     Returns:
         Chunked text
+
     """
     text_splitter = RecursiveCharacterTextSplitter(
         separators=["\n\n", "\n", " ", ""],

@@ -28,5 +28,5 @@ bash get_data.sh
 
 ```bash
 cd ..
-uv run agentic_rag/main.py
+uv run agentic_rag/run.py --data-pipeline
 ```

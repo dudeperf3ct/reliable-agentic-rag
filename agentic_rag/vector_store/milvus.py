@@ -1,6 +1,7 @@
 """Milvus vector database."""
 
 from typing import Any
+
 import numpy as np
 from pymilvus import (
     CollectionSchema,
@@ -26,6 +27,7 @@ def create_schema(
 
     Returns:
         CollectionSchema for Milvus vector store.
+
     """
     # Specify the data schema for the new Collection.
     fields = [
@@ -77,6 +79,7 @@ class CustomMilvusClient:
             add_sparse_index: Enable sparse indexing. Defaults to False.
             add_full_text_index: Enable full text indexing.
                     Defaults to False.
+
         """
         # Drop if collection exists
         has_collection = self.milvus_client.has_collection(collection_name, timeout=5)
@@ -125,13 +128,14 @@ class CustomMilvusClient:
         Args:
             data: Dataset to be stored in milvus vector store.
             collection_name: Name of the collection
+
         """
         _ = self.milvus_client.insert(collection_name, data, progress_bar=True)
 
     def dense_search(
         self,
         collection_name: str,
-        query_dense_embedding: np.ndarray,
+        query_dense_embedding: list[float],
         top_k: int,
         dense_search_params: dict,
     ) -> list:
@@ -140,7 +144,7 @@ class CustomMilvusClient:
         Args:
             collection_name: Name of the collection
             query_dense_embedding: The embedding vector from the
-                dense model for the query
+                dense model for the query as a list of floats.
             top_k: Top k entries semantically similar to query
                 in the vector store.
             dense_search_params: The search parameters such as
@@ -148,10 +152,11 @@ class CustomMilvusClient:
 
         Returns:
             List of text, index and score sorted by score.
+
         """
         result = self.milvus_client.search(
             collection_name=collection_name,
-            data=query_dense_embedding,
+            data=[query_dense_embedding],
             anns_field="dense_vector",
             limit=top_k,
             output_fields=["text"],
@@ -179,10 +184,11 @@ class CustomMilvusClient:
 
         Returns:
             List of text, index and score sorted by score.
+
         """
         result = self.milvus_client.search(
             collection_name=collection_name,
-            data=[query_sparse_embedding],
+            data=query_sparse_embedding,
             anns_field="sparse_vector",
             limit=top_k,
             output_fields=["text"],
@@ -210,10 +216,11 @@ class CustomMilvusClient:
 
         Returns:
             List of text, index and score sorted by score.
+
         """
         result = self.milvus_client.search(
             collection_name=collection_name,
-            data=[query_full_text_embedding],
+            data=query_full_text_embedding,
             anns_field="full_text_vector",
             limit=top_k,
             output_fields=["text"],

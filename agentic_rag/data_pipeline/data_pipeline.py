@@ -1,6 +1,9 @@
-"""Main application entrypoint."""
+"""Datapipeline function."""
 
+# Warning related to star imports
+# ruff: noqa: F403 F405
 from functools import partial
+
 import ray
 from loguru import logger
 from ray.data import Dataset
@@ -9,10 +12,9 @@ from agentic_rag.configs.config import *
 from agentic_rag.data_preprocess.data import chunk_text, parse_html
 from agentic_rag.data_preprocess.embed import (
     EmbedChunks,
-    SparseEmbedChunks,
     FullTextEmbedChunks,
+    SparseEmbedChunks,
 )
-from agentic_rag.vector_store.milvus import CustomMilvusClient
 from agentic_rag.utils import timeit
 
 
@@ -26,13 +28,14 @@ def get_corpus(chunk_ds: Dataset) -> list[str]:
 
     Returns:
         List of chunked text
+
     """
     content = chunk_ds.take_all()
     return [data["text"] for data in content]
 
 
 @timeit
-def data_pipeline() -> Dataset:
+def build_data_pipeline() -> Dataset:
     """Run data pipeline using Ray Data.
 
     In this pipeline,
@@ -46,6 +49,7 @@ def data_pipeline() -> Dataset:
     Returns:
         Ray dataset containing text, source and dense embeddings.
         Sparse and full text embeddings are also returned if included.
+
     """
     # Get all html filenames
     ds = ray.data.from_items(
@@ -94,37 +98,3 @@ def data_pipeline() -> Dataset:
             concurrency=1,
         )
     return embedded_chunks
-
-
-@timeit
-def build_index(ds: Dataset) -> None:
-    """Insert the data into milvus vector store.
-
-    Args:
-        ds: Ray dataset containing text, source and dense embeddings.
-            Sparse and full text embeddings are also returned if included.
-    """
-    data = ds.take_all()
-    logger.info(f"Before filtering length of data {len(data)}")
-    # Remove empty full_text_vector fields
-    # Example : https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/perf_analyzer/docs/cli.html#id1
-    # This creates {'text': '-?#',....,'full_text_vector': {}}
-    filtered_data = [item for item in data if item.get("full_text_vector")]
-    logger.info(f"After filtering length of data {len(filtered_data)}")
-
-    milvus_client = CustomMilvusClient()
-    milvus_client.create_collection(
-        collection_name=COLLECTION_NAME,
-        dense_dim=EMBEDDING_MODEL_DIM,
-        dense_distance_metric=DENSE_METRIC,
-        add_sparse_index=ENABLE_SPARSE_INDEX,
-        add_full_text_index=ENABLE_FULL_TEXT_INDEX,
-    )
-    milvus_client.store(filtered_data, COLLECTION_NAME)
-    logger.info("Inserted data into milvus store successfully")
-
-
-if __name__ == "__main__":
-    logger.info("Running data pipeline...")
-    ds = data_pipeline()
-    build_index(ds)

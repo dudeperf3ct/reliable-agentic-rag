@@ -1279,6 +1279,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
+    { name = "click" },
     { name = "datasets" },
     { name = "flagembedding" },
     { name = "langchain-text-splitters" },
@@ -1295,6 +1296,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.12.3" },
+    { name = "click", specifier = ">=8.1.7" },
     { name = "datasets", specifier = ">=3.0.1" },
     { name = "flagembedding", specifier = ">=1.2.11" },
     { name = "langchain-text-splitters", specifier = ">=0.3.0" },
