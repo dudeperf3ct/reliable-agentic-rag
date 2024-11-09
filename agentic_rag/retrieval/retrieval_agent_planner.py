@@ -11,6 +11,7 @@ from agentic_rag.data_preprocess.embed import (
 )
 from agentic_rag.utils import rrf
 from milvus_model.reranker import BGERerankFunction
+from loguru import logger
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -49,14 +50,14 @@ class RetrievalPlanner:
         """No retrieval from vector store."""
         return ""
 
-    def semantic_search_retrieval(self, query: str) -> list:
+    def semantic_search_retrieval(self, query: str) -> list[str]:
         """Semantic search retrieval using embedding model from vector store.
 
         Args:
             query: Input user query
 
         Returns:
-            List of text, index and score sorted by score.
+            List of texts from vector database closest to input query.
         """
         if self.dense_model is None:
             self.dense_model = self._get_embedding_model(embedding_approach="dense")
@@ -68,21 +69,23 @@ class RetrievalPlanner:
         dense_search_params = {"metric_type": DENSE_METRIC, "params": {}}
 
         # Get the TOP_K closest documents to the query
-        return self.milvus_client.dense_search(
+        retrieved_docs = self.milvus_client.dense_search(
             collection_name=self.collection_name,
             query_dense_embedding=query_embedding,
             top_k=self.top_k,
             dense_search_params=dense_search_params,
         )
+        logger.debug(f"Retrieved docs: {retrieved_docs}")
+        return [res["entity"]["text"] for res in retrieved_docs]
 
-    def sparse_search_retrieval(self, query: str) -> list:
+    def sparse_search_retrieval(self, query: str) -> list[str]:
         """Sparse search retrieval using embedding model from vector store.
 
         Args:
             query: Input user query
 
         Returns:
-            List of text, index and score sorted by score.
+            List of texts from vector database closest to input query.
         """
         if self.sparse_model is None:
             self.sparse_model = self._get_embedding_model(embedding_approach="sparse")
@@ -94,21 +97,23 @@ class RetrievalPlanner:
         sparse_search_params = {"metric_type": SPARSE_METRIC, "params": {}}
 
         # Get the TOP_K closest documents to the query
-        return self.milvus_client.sparse_search(
+        retrieved_docs = self.milvus_client.sparse_search(
             collection_name=self.collection_name,
             query_sparse_embedding=query_embedding,
             top_k=self.top_k,
             sparse_search_params=sparse_search_params,
         )
+        logger.debug(f"Retrieved docs: {retrieved_docs}")
+        return [res["entity"]["text"] for res in retrieved_docs]
 
-    def fulltext_search_retrieval(self, query: str) -> list:
+    def fulltext_search_retrieval(self, query: str) -> list[str]:
         """Full text search retrieval using embedding model from vector store.
 
         Args:
             query: Input user query
 
         Returns:
-            List of text, index and score sorted by score.
+            List of texts from vector database closest to input query.
         """
         if self.fulltext_model is None:
             self.fulltext_model = self._get_embedding_model(
@@ -122,14 +127,16 @@ class RetrievalPlanner:
         sparse_search_params = {"metric_type": SPARSE_METRIC, "params": {}}
 
         # Get the TOP_K closest documents to the query
-        return self.milvus_client.full_text_search(
+        retrieved_docs = self.milvus_client.full_text_search(
             collection_name=self.collection_name,
             query_full_text_embedding=query_embedding,
             top_k=self.top_k,
             sparse_search_params=sparse_search_params,
         )
+        logger.debug(f"Retrieved docs: {retrieved_docs}")
+        return [res["entity"]["text"] for res in retrieved_docs]
 
-    def hybrid_search_retrieval_with_rrf(self, query: str):
+    def hybrid_search_retrieval_with_rrf(self, query: str) -> list[str]:
         """Hybrid search retrieval using embedding model from vector store.
 
         Hybrid search consists of two retrievers:
@@ -138,19 +145,25 @@ class RetrievalPlanner:
 
         Result collector approach (RRF) : Used to combine the results
         of both the retrieval approaches.
+
+        Returns:
+            List of texts from vector database closest to input query.
         """
         combined_docs = []
         dense_docs = self.semantic_search_retrieval(query=query)
-        combined_docs.append([res["entity"]["text"] for res in dense_docs])
+        combined_docs.append(dense_docs)
         if ENABLE_SPARSE_INDEX:
             sparse_docs = self.sparse_search_retrieval(query=query)
-            combined_docs.append([res["entity"]["text"] for res in sparse_docs])
+            combined_docs.append(sparse_docs)
         if ENABLE_FULL_TEXT_INDEX:
             fulltext_docs = self.fulltext_search_retrieval(query=query)
-            combined_docs.append([res["entity"]["text"] for res in fulltext_docs])
-        return rrf(combined_docs)[: self.top_k]
+            combined_docs.append(fulltext_docs)
 
-    def hybrid_search_retrieval_with_reranker(self, query: str):
+        rrf_docs = rrf(combined_docs)[: self.top_k]
+        logger.debug(f"Retrieved docs: {rrf_docs}")
+        return [res[0] for res in rrf_docs]
+
+    def hybrid_search_retrieval_with_reranker(self, query: str) -> list[str]:
         """Hybrid search retrieval using embedding model from vector store.
 
         Hybrid search consists of two retrievers:
@@ -159,15 +172,19 @@ class RetrievalPlanner:
 
         Result collector approach (Re-ranker model) : Used to combine the results
         of both the retrieval approaches.
+
+        Returns:
+            List of texts from vector database closest to input query.
         """
+        combined_docs = []
         dense_docs = self.semantic_search_retrieval(query=query)
-        combined_docs = [res["entity"]["text"] for res in dense_docs]
+        combined_docs = dense_docs.copy()
         if ENABLE_SPARSE_INDEX:
             sparse_docs = self.sparse_search_retrieval(query=query)
-            combined_docs.extend([res["entity"]["text"] for res in sparse_docs])
+            combined_docs.extend(sparse_docs)
         if ENABLE_FULL_TEXT_INDEX:
             fulltext_docs = self.fulltext_search_retrieval(query=query)
-            combined_docs.extend([res["entity"]["text"] for res in fulltext_docs])
+            combined_docs.extend(fulltext_docs)
         # Remove duplicates if any
         combined_docs = list(set(combined_docs))
 
@@ -177,9 +194,19 @@ class RetrievalPlanner:
                 device=DEVICE,
                 batch_size=BATCH_SIZE,
             )
-        return self.reranker_model(
+        rereanker_docs = self.reranker_model(
             query=query, documents=combined_docs, top_k=self.top_k
         )
+        logger.debug(f"Retrieved docs: {rereanker_docs}")
+        return [res.text for res in rereanker_docs]
 
-    # def hyde_retrieval():
-    #     pass
+    def hyde_retrieval(self, hypothetical_docs: str) -> list[str]:
+        """_summary_
+
+        Args:
+            hypothetical_docs: _description_
+
+        Returns:
+            List of texts from vector database closest to input query.
+        """
+        return self.semantic_search_retrieval(query=hypothetical_docs)

@@ -14,6 +14,11 @@ from agentic_rag.vector_store.milvus import CustomMilvusClient
 def build_index(ds: Dataset) -> None:
     """Insert the data into milvus vector store.
 
+    In data indexing,
+    1. Connect to vector database
+    2. Create a collection
+    3. Store data into the collection
+
     Args:
         ds: Ray dataset containing text, source and dense embeddings.
             Sparse and full text embeddings are also returned if included.

@@ -2,41 +2,69 @@
 
 import click
 from loguru import logger
-
-from agentic_rag.configs.config import COLLECTION_NAME, TOP_K
+from typing import Optional
+from agentic_rag.configs.config import COLLECTION_NAME, TOP_K, DEFAULT_QUESTION
+from agentic_rag.configs.prompts import RAG_PROMPT
 from agentic_rag.data_pipeline.data_pipeline import build_data_pipeline
 from agentic_rag.data_pipeline.indexing import build_index
 from agentic_rag.retrieval.retrieval_engine import RetrievalEngine
 
+logger.add("rag_agent.log")
+
 
 @click.command(
     help="""
-Run RAG workflow.
+Run pipelines.
 
 Examples:
-  \b
-  # Run the data pipeline
-    python run.py --datapipline
+  \n
+  # Run the data pipeline\n
+    python agentic_rag/run.py data
+
+  # Run the data pipeline\n
+    python agentic_rag/run.py query --query-text "My question?"
 """
 )
-@click.option("--data-pipeline", is_flag=True, default=False, help="Run datapipeline")
-def main(data_pipeline: bool = False):
-    if data_pipeline:
+@click.argument(
+    "pipeline",
+    type=click.Choice(["data", "query"]),
+    required=True,
+)
+@click.option(
+    "--query-text",
+    "query_text",
+    is_flag=False,
+    default=DEFAULT_QUESTION,
+    help="Input question.",
+)
+def main(pipeline: str, query_text: Optional[str] = None) -> None:
+    """Run data or query pipelines.
+
+    Args:
+        pipeline: Name of the pipeline to run
+        query_text: Input query. Defaults to None.
+
+    Raises:
+        click.UsageError: If `query_text` is not passed when
+            pipeline is in query mode.
+    """
+    if pipeline == "data":
         logger.info("Running data pipeline...")
         ds = build_data_pipeline()
 
         logger.info("Building index...")
         build_index(ds)
 
-    for q in ["TensorRT", "PyTorch", "ONNX"]:
-        query = f"How to make custom layers of {q} work in Triton?"
-        logger.info(f"Query: {query}")
+    if pipeline == "query":
+        logger.info(f"Running query : {query_text}")
         retrieval_engine = RetrievalEngine(
-            query=query,
+            query=query_text,
             collection_name=COLLECTION_NAME,
             top_k=TOP_K,
         )
-        retrieval_engine.user_plan()
+        llm_response = retrieval_engine.user_plan(prompt_template=RAG_PROMPT)
+        logger.info("-" * 100)
+        logger.info(f"Query:\n{query_text}\nLLM Response:\n{llm_response}")
 
 
 if __name__ == "__main__":

@@ -138,7 +138,7 @@ class CustomMilvusClient:
         query_dense_embedding: list[float],
         top_k: int,
         dense_search_params: dict,
-    ) -> list:
+    ) -> list[dict]:
         """Perform dense search.
 
         Args:
@@ -151,7 +151,7 @@ class CustomMilvusClient:
                 metrics and other param used to calculate score.
 
         Returns:
-            List of text, index and score sorted by score.
+            List of dictionary containing text, index and score sorted by score.
 
         """
         result = self.milvus_client.search(
@@ -170,7 +170,7 @@ class CustomMilvusClient:
         query_sparse_embedding: list[dict[int, float]],
         top_k: int,
         sparse_search_params: dict,
-    ) -> list:
+    ) -> list[dict]:
         """Perform sparse search.
 
         Args:
@@ -183,7 +183,7 @@ class CustomMilvusClient:
                 metrics and other param used to calculate score.
 
         Returns:
-            List of text, index and score sorted by score.
+            List of dictionary containing text, index and score sorted by score.
 
         """
         result = self.milvus_client.search(
@@ -202,7 +202,7 @@ class CustomMilvusClient:
         query_full_text_embedding: list[dict[int, float]],
         top_k: int,
         sparse_search_params: dict,
-    ) -> list:
+    ) -> list[dict]:
         """Perform full text search using BM25 model.
 
         Args:
@@ -215,7 +215,7 @@ class CustomMilvusClient:
                 metrics and other param used to calculate score.
 
         Returns:
-            List of text, index and score sorted by score.
+            List of dictionary containing text, index and score sorted by score.
 
         """
         result = self.milvus_client.search(

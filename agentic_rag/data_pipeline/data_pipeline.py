@@ -51,21 +51,21 @@ def build_data_pipeline() -> Dataset:
         Sparse and full text embeddings are also returned if included.
 
     """
-    # Get all html filenames
+    # 1. Get all html filenames
     ds = ray.data.from_items(
         [{"path": path} for path in DATA_DIR.rglob("*.html") if not path.is_dir()]
     )
     logger.info(f"Found {ds.count()} documents")
 
-    # Extract text from html
+    # 2. Extract text from html
     content_ds = ds.flat_map(parse_html)
 
-    # Create chunks from text
+    # 3. Create chunks from text
     chunks_ds = content_ds.flat_map(
         partial(chunk_text, chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
     )
 
-    # Get dense embeddings for the chunks
+    # 4. Get dense embeddings for the chunks
     embedded_chunks = chunks_ds.map_batches(
         EmbedChunks,
         fn_constructor_kwargs={
@@ -77,7 +77,7 @@ def build_data_pipeline() -> Dataset:
         concurrency=1,
     )
 
-    # Get sparse embeddings for the chunks
+    # 5. Get sparse embeddings for the chunks
     if ENABLE_SPARSE_INDEX:
         embedded_chunks = embedded_chunks.map_batches(
             SparseEmbedChunks,
@@ -87,7 +87,7 @@ def build_data_pipeline() -> Dataset:
             concurrency=1,
         )
 
-    # Get sparse embedding using BM-25 model for the chunks
+    # 6. Get sparse embedding using BM-25 model for the chunks
     if ENABLE_FULL_TEXT_INDEX:
         corpus = get_corpus(chunks_ds)
         embedded_chunks = embedded_chunks.map_batches(

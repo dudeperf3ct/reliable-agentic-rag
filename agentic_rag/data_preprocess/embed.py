@@ -50,8 +50,7 @@ class EmbedChunks:
 
         """
         self.embedding_model = SentenceTransformer(
-            model_name_or_path=model_name,
-            device=DEVICE,
+            model_name_or_path=model_name, device=DEVICE
         )
         self.batch_size = batch_size
 
