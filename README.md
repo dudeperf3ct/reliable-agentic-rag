@@ -2,6 +2,15 @@
 
 This project is an exploration to understand RAG agents and attempt to replicate the blog titled "Reliable Agentic RAG with LLM Trustworthiness Estimates" : <https://pub.towardsai.net/reliable-agentic-rag-with-llm-trustworthiness-estimates-c488fb1bd116>
 
+Tested this on machine with following configuration
+
+```txt
+Python - 3.12
+uv - 0.4.25
+GPU - Nvidia GeForce RTX 3060 Mobile
+OS - Ubuntu 22.04.5 LTS
+```
+
 ## Getting Started
 
 Install [uv](https://docs.astral.sh/uv/).
@@ -58,10 +67,10 @@ python agentic_rag/run.py query --query-text "How to make custom layers of Tenso
 ```
 
 > [!WARNING]
-> Two (or one) API key(s) should be added to the `.env` file.<br>
+> One (or two) API key(s) should be added to the `.env` file.<br>
 > Trustworthy Language Model (TLM) by cleanlab.ai to estimate trustworthy score. Get API key from here: <https://app.cleanlab.ai/account> after creating an account.<br>
 > API key for an LLM used to generate a response.
-> If LLM is hosted-locally, no API key is required configure only `LLM_MODEL` and `LLM_API_BASE` parameters.<br>
+> If LLM is hosted locally, no API key is required. Configure only `LLM_MODEL` and `LLM_API_BASE` parameters.<br>
 > If LLM is closed-source, API key is required to be added in the `.env` file.<br>
 
 For more information on how to configure various LLM providers, refer the [documentation](./docs/Querypipeline.md#llm).
@@ -85,9 +94,8 @@ Strictly, the approach implemented as part of this project is <u>not an agentic 
 
 Some questions of my own
 
-- Will this fully autonomous agentic RAG approach outperform the current semi-automated RAG approach?
-- What are advantages of using one over the other?
-- In current RAG approach, what different approaches can be used to replace the [uncertainity estimator](./docs/Querypipeline.md#uncertainity-estimator) component?
+- Will this fully autonomous agentic RAG approach outperform the current semi-automated RAG approach? What are advantages of using one over the other?
+- In current RAG approach, what different approaches that can be used to replace the [uncertainity estimator](./docs/Querypipeline.md#uncertainity-estimator) component?
 - Is this RAG approach reliable and robust to all scenarios?
 
 ## Recommended Readings
