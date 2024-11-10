@@ -4,15 +4,16 @@
 # ruff: noqa: F403 F405
 from loguru import logger
 from ray.data import Dataset
-from agentic_rag.configs.config import *
 
+from agentic_rag.configs.config import *
 from agentic_rag.utils import timeit
 from agentic_rag.vector_store.milvus import CustomMilvusClient
 
 
 @timeit
 def build_index(ds: Dataset) -> None:
-    """Insert the data into milvus vector store.
+    """
+    Insert the data into milvus vector store.
 
     In data indexing,
     1. Connect to vector database

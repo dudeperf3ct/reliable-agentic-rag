@@ -1,6 +1,6 @@
 # Reliable Agentic RAG with LLM Trustworthiness Estimates
 
-We will cover following
+This project is an exploration to understand RAG agents and attempt to replicate the blog titled "Reliable Agentic RAG with LLM Trustworthiness Estimates" : <https://pub.towardsai.net/reliable-agentic-rag-with-llm-trustworthiness-estimates-c488fb1bd116>
 
 ## Getting Started
 
@@ -16,7 +16,7 @@ source .venv/bin/activate
 Install the dependencies required to run this project inside the virtual environment.
 
 ```bash
-uv pip install -r pyproject.toml
+uv sync
 ```
 
 ### Download dataset
@@ -53,9 +53,49 @@ To know more about data pipeline, refer to the documentation on [Datapipeline](.
 
 ### Run query pipeline
 
-> [!Note]
-> Make sure you are running the following command from the root of the project (inside `reliable-agentic-rag` folder).
-
 ```bash
 python agentic_rag/run.py query --query-text "How to make custom layers of TensorRT work in Triton?"
 ```
+
+> [!WARNING]
+> Two (or one) API key(s) should be added to the `.env` file.<br>
+> Trustworthy Language Model (TLM) by cleanlab.ai to estimate trustworthy score. Get API key from here: <https://app.cleanlab.ai/account> after creating an account.<br>
+> API key for an LLM used to generate a response.
+> If LLM is hosted-locally, no API key is required configure only `LLM_MODEL` and `LLM_API_BASE` parameters.<br>
+> If LLM is closed-source, API key is required to be added in the `.env` file.<br>
+
+For more information on how to configure various LLM providers, refer the [documentation](./docs/Querypipeline.md#llm).
+
+> [!TIP]
+> The documentation for parameters that can be configuration as part of query pipeline [here](./docs/Querypipeline.md#configuration).
+
+## Documentation
+
+### Data pipline
+
+Documentation: [docs](./docs/Datapipeline.md)
+
+### Query pipline
+
+Documentation: [docs](./docs/Querypipeline.md)
+
+## Agentic RAG
+
+Strictly, the approach implemented as part of this project is <u>not an agentic RAG approach</u>. We are manually providing the list of retrieval strategies, calling the necessary functions for the corresponding strategy and selecting the next strategy depending on the trustworthiness score. To implement a truly autonomus agentic RAG approach, one approach outlined in [this blog](https://vectorize.io/how-i-finally-got-agentic-rag-to-work-right/) is to use JSON mode for structred responses or creating multiple agents to collaborate.
+
+Some questions of my own
+
+- Will this fully autonomous agentic RAG approach outperform the current semi-automated RAG approach?
+- What are advantages of using one over the other?
+- In current RAG approach, what different approaches can be used to replace the [uncertainity estimator](./docs/Querypipeline.md#uncertainity-estimator) component?
+- Is this RAG approach reliable and robust to all scenarios?
+
+## Recommended Readings
+
+- <https://pub.towardsai.net/reliable-agentic-rag-with-llm-trustworthiness-estimates-c488fb1bd116>
+- <https://vectorize.io/how-i-finally-got-agentic-rag-to-work-right/>
+
+## Further work
+
+- [ ] Implement a [agentic RAG processing loop](https://vectorize.io/how-i-finally-got-agentic-rag-to-work-right/) (explained in Agentic RAG processing loop section of the link)
+- [ ] Make configuration more intutive (using `pydantic`)

@@ -1,25 +1,50 @@
 """Retrieval Planner to fetch context for LLM using various retrieval approaches."""
 
+# Warning related to star imports
+# ruff: noqa: F403 F405
+
 from typing import Any
+
 import torch
+from loguru import logger
+from milvus_model.reranker import BGERerankFunction
+
 from agentic_rag.configs.config import *
-from agentic_rag.vector_store.milvus import CustomMilvusClient
 from agentic_rag.data_preprocess.embed import (
     EmbedChunks,
-    SparseEmbedChunks,
     FullTextEmbedChunks,
+    SparseEmbedChunks,
 )
 from agentic_rag.utils import rrf
-from milvus_model.reranker import BGERerankFunction
-from loguru import logger
+from agentic_rag.vector_store.milvus import CustomMilvusClient
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 class RetrievalPlanner:
-    """RetrievalPlanner class returns context based on retrieval approach."""
+    """
+    RetrievalPlanner class returns context based on retrieval approach.
+
+    Attributes:
+        collection_name: Name of collection
+        top_k: Number of results to use as context
+        milvus_client: Milvus vector database client
+        dense_model: Dense model
+        sparse_model: Sparse model
+        fulltext_model: BM-25 model
+        reranker_model: Re-ranker model
+
+    """
 
     def __init__(self, collection_name: str, top_k: int):
+        """
+        Init function for RetrievalPlanner class.
+
+        Args:
+            collection_name: Name of collection
+            top_k: Number of results to use as context
+
+        """
         self.collection_name = collection_name
         self.top_k = top_k
         self.milvus_client = CustomMilvusClient()
@@ -29,7 +54,8 @@ class RetrievalPlanner:
         self.reranker_model = None
 
     def _get_embedding_model(self, embedding_approach: str) -> Any:
-        """Get embedding model based on input embedding approach.
+        """
+        Get embedding model based on input embedding approach.
 
         Args:
             embedding_approach: Embedding model to select
@@ -37,6 +63,7 @@ class RetrievalPlanner:
 
         Returns:
             Embedding model class.
+
         """
         if embedding_approach == "dense":
             return EmbedChunks(model_name=EMBEDDING_MODEL_NAME, batch_size=BATCH_SIZE)
@@ -51,13 +78,15 @@ class RetrievalPlanner:
         return ""
 
     def semantic_search_retrieval(self, query: str) -> list[str]:
-        """Semantic search retrieval using embedding model from vector store.
+        """
+        Semantic search retrieval.
 
         Args:
             query: Input user query
 
         Returns:
             List of texts from vector database closest to input query.
+
         """
         if self.dense_model is None:
             self.dense_model = self._get_embedding_model(embedding_approach="dense")
@@ -79,13 +108,15 @@ class RetrievalPlanner:
         return [res["entity"]["text"] for res in retrieved_docs]
 
     def sparse_search_retrieval(self, query: str) -> list[str]:
-        """Sparse search retrieval using embedding model from vector store.
+        """
+        Sparse search retrieval.
 
         Args:
             query: Input user query
 
         Returns:
             List of texts from vector database closest to input query.
+
         """
         if self.sparse_model is None:
             self.sparse_model = self._get_embedding_model(embedding_approach="sparse")
@@ -107,13 +138,15 @@ class RetrievalPlanner:
         return [res["entity"]["text"] for res in retrieved_docs]
 
     def fulltext_search_retrieval(self, query: str) -> list[str]:
-        """Full text search retrieval using embedding model from vector store.
+        """
+        Full text search retrieval.
 
         Args:
             query: Input user query
 
         Returns:
             List of texts from vector database closest to input query.
+
         """
         if self.fulltext_model is None:
             self.fulltext_model = self._get_embedding_model(
@@ -137,7 +170,8 @@ class RetrievalPlanner:
         return [res["entity"]["text"] for res in retrieved_docs]
 
     def hybrid_search_retrieval_with_rrf(self, query: str) -> list[str]:
-        """Hybrid search retrieval using embedding model from vector store.
+        """
+        Hybrid search retrieval using rrf.
 
         Hybrid search consists of two retrievers:
             1. Dense embedding search (semantic/embedding search)
@@ -146,8 +180,12 @@ class RetrievalPlanner:
         Result collector approach (RRF) : Used to combine the results
         of both the retrieval approaches.
 
+        Args:
+            query: Input user query
+
         Returns:
             List of texts from vector database closest to input query.
+
         """
         combined_docs = []
         dense_docs = self.semantic_search_retrieval(query=query)
@@ -164,7 +202,8 @@ class RetrievalPlanner:
         return [res[0] for res in rrf_docs]
 
     def hybrid_search_retrieval_with_reranker(self, query: str) -> list[str]:
-        """Hybrid search retrieval using embedding model from vector store.
+        """
+        Hybrid search retrieval using reranker.
 
         Hybrid search consists of two retrievers:
             1. Dense embedding search (semantic/embedding search)
@@ -173,8 +212,12 @@ class RetrievalPlanner:
         Result collector approach (Re-ranker model) : Used to combine the results
         of both the retrieval approaches.
 
+        Args:
+            query: Input user query
+
         Returns:
             List of texts from vector database closest to input query.
+
         """
         combined_docs = []
         dense_docs = self.semantic_search_retrieval(query=query)
@@ -201,12 +244,18 @@ class RetrievalPlanner:
         return [res.text for res in rereanker_docs]
 
     def hyde_retrieval(self, hypothetical_docs: str) -> list[str]:
-        """_summary_
+        """
+        HyDE retrieval.
+
+        This approach generates a fake document using LLM that answers
+        the query. This fake document is used to find similar document
+        in the vector store to be used as the context.
 
         Args:
-            hypothetical_docs: _description_
+            hypothetical_docs: Hypothetical document generated by LLM.
 
         Returns:
             List of texts from vector database closest to input query.
+
         """
         return self.semantic_search_retrieval(query=hypothetical_docs)

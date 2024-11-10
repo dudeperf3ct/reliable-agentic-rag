@@ -1,14 +1,15 @@
 """Utility functions."""
 
-from typing import Any
 import time
 from collections import defaultdict
+from typing import Any
 
 from loguru import logger
 
 
 def timeit(func) -> Any:
-    """Decorator for timing function.
+    """
+    Measure the execution time of a function.
 
     Args:
         func: Input function
@@ -16,7 +17,8 @@ def timeit(func) -> Any:
     """
 
     def wrapper(*args, **kwargs) -> Any:
-        """Wrapper to calculate time spent by function.
+        """
+        Calculate the time spent by a function.
 
         Returns:
             Result from the function.
@@ -33,7 +35,8 @@ def timeit(func) -> Any:
 
 
 def rrf(list_of_texts: list[list[str]], k: int = 60) -> list[tuple[str, float]]:
-    """Reciprocal Rank Fusion.
+    """
+    Reciprocal Rank Fusion.
 
     For each list, we calculate a score using on RRF formula based
     on it's position in the list. We assign a score for each text
@@ -48,6 +51,7 @@ def rrf(list_of_texts: list[list[str]], k: int = 60) -> list[tuple[str, float]]:
 
     Returns:
         List of reranked text and corresponding score.
+
     """
     fused_results: dict[str, float] = defaultdict(float)
 
@@ -57,4 +61,4 @@ def rrf(list_of_texts: list[list[str]], k: int = 60) -> list[tuple[str, float]]:
 
     # Sort items based on their RRF scores in descending order
     sorted_items = dict(sorted(fused_results.items(), key=lambda x: x[1], reverse=True))
-    return [(text, score) for text, score in sorted_items.items()]  # noqa: C416
+    return [(text, score) for text, score in sorted_items.items()]

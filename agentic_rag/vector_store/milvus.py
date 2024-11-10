@@ -2,7 +2,6 @@
 
 from typing import Any
 
-import numpy as np
 from pymilvus import (
     CollectionSchema,
     DataType,
@@ -12,11 +11,10 @@ from pymilvus import (
 
 
 def create_schema(
-    dense_dim: int,
-    add_sparse_index: bool = False,
-    add_full_text_index: bool = False,
+    dense_dim: int, add_sparse_index: bool = False, add_full_text_index: bool = False
 ) -> CollectionSchema:
-    """Create a schema for Milvus vector store.
+    """
+    Create a schema for Milvus vector store.
 
     Args:
         dense_dim: Embedding model output dimension.
@@ -60,6 +58,7 @@ class CustomMilvusClient:
 
     def __init__(self) -> None:
         """Connect to milvus lite client."""
+        # NOTE: Not recommended for production
         self.milvus_client = MilvusClient(uri="./milvus.db")
 
     def create_collection(
@@ -70,7 +69,8 @@ class CustomMilvusClient:
         add_sparse_index: bool = False,
         add_full_text_index: bool = False,
     ) -> None:
-        """Create a collection for a milvus vector store.
+        """
+        Create a collection for a milvus vector store.
 
         Args:
             collection_name: Name of the collection
@@ -118,12 +118,9 @@ class CustomMilvusClient:
             index_params=index_params,
         )
 
-    def store(
-        self,
-        data: list[dict[str, Any]],
-        collection_name: str,
-    ) -> None:
-        """Store texts, embedding (dense and sparse) and source.
+    def store(self, data: list[dict[str, Any]], collection_name: str) -> None:
+        """
+        Store texts, embedding (dense and sparse) and source.
 
         Args:
             data: Dataset to be stored in milvus vector store.
@@ -139,7 +136,8 @@ class CustomMilvusClient:
         top_k: int,
         dense_search_params: dict,
     ) -> list[dict]:
-        """Perform dense search.
+        """
+        Perform dense search.
 
         Args:
             collection_name: Name of the collection
@@ -171,7 +169,8 @@ class CustomMilvusClient:
         top_k: int,
         sparse_search_params: dict,
     ) -> list[dict]:
-        """Perform sparse search.
+        """
+        Perform sparse search.
 
         Args:
             collection_name: Name of the collection
@@ -203,7 +202,8 @@ class CustomMilvusClient:
         top_k: int,
         sparse_search_params: dict,
     ) -> list[dict]:
-        """Perform full text search using BM25 model.
+        """
+        Perform full text search using BM25 model.
 
         Args:
             collection_name: Name of the collection

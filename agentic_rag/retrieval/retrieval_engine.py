@@ -2,47 +2,53 @@
 
 import os
 from collections import defaultdict
-from agentic_rag.configs.config import (
-    RETRIEVAL_PRIORITY,
-    TRUST_SCORE_THRESH,
-    STUB_RESPONSE,
-    DEBUG_WITHOUT_LLM,
-    LLM_MODEL,
-    LLM_API_BASE,
-    MAX_OUTPUT_TOKENS,
-)
-from agentic_rag.configs.prompts import RAG_PROMPT, HYDE_PROMPT, LLM_SYSTEM_PROMPT
-from agentic_rag.retrieval.retrieval_agent_planner import RetrievalPlanner
-from agentic_rag.generation.llm_engine import LLMEngine
-from loguru import logger
-from agentic_rag.utils import timeit
-from dotenv import load_dotenv
 from string import Template
+
+from dotenv import load_dotenv
+from loguru import logger
+
+from agentic_rag.configs.config import (
+    DEBUG_WITHOUT_LLM,
+    LLM_API_BASE,
+    LLM_MODEL,
+    MAX_OUTPUT_TOKENS,
+    RETRIEVAL_PRIORITY,
+    STUB_RESPONSE,
+    TRUST_SCORE_THRESH,
+)
+from agentic_rag.configs.prompts import HYDE_PROMPT, LLM_SYSTEM_PROMPT, RAG_PROMPT
+from agentic_rag.generation.llm_engine import LLMEngine
+from agentic_rag.retrieval.retrieval_agent_planner import RetrievalPlanner
+from agentic_rag.utils import timeit
 
 # Load API keys from .env file as environment variable
 load_dotenv()
 
 
 class RetrievalEngine:
-    """Retrieval Engine.
+    """
+    Retrieval Engine.
 
     Retrieval Engine is responsible for creating a retrieval plan
     and providing a response from LLM based on uncertaininty score.
 
     Attributes:
-        llm_engine:
-        query:
-        planner:
+        llm_engine: LLM engine to get response from LLM
+        query: Input query
+        planner: Retrieval planner that implements several retrieval
+            strategies
 
     """
 
     def __init__(self, query: str, collection_name: str, top_k: int) -> None:
-        """_summary_
+        """
+        Init function for RetrievalEngine class.
 
         Args:
-            query: _description_
-            collection_name: _description_
-            top_k: _description_
+            query: Input query.
+            collection_name: Name of vector db collection
+            top_k: Number of results to be used as context.
+
         """
         self.llm_engine = None
         self.query = query
@@ -55,14 +61,18 @@ class RetrievalEngine:
         max_tokens: int = MAX_OUTPUT_TOKENS,
         system_prompt: str = LLM_SYSTEM_PROMPT,
     ):
-        """Get documents based on retrieval strategy.
+        """
+        Get documents based on retrieval strategy.
 
         Args:
             retrieval_strategy: Selected retrieval strategy.
             hyde_prompt: Prompt used by HyDE retrieval approach
+            max_tokens: Maximum output token from LLM response
+            system_prompt: System prompt passed to LLM alongside user prompt
 
         Returns:
             Documents retrieved based on selected retrieval strategy
+
         """
         if retrieval_strategy == "no_retrieval":
             return self.planner.no_retrieval()
@@ -87,7 +97,8 @@ class RetrievalEngine:
             return self.planner.hyde_retrieval(hypothetical_docs=response_docs)
 
     def get_context(self, retrieval_strategy: str) -> str:
-        """Get the context for LLM based on retrieval strategy
+        """
+        Get the context for LLM based on retrieval strategy.
 
         Args:
             retrieval_strategy: Selected retrieval strategy.
@@ -95,25 +106,29 @@ class RetrievalEngine:
         Returns:
             The retrieved context as a single concaatenated string
             using selected retrieval strategy.
+
         """
+        # TODO: pass system_message and max_tokens to _get_retriever
         logger.info(f"Using retrieval strategy = {retrieval_strategy}")
         retrieved_texts = self._get_retriever(retrieval_strategy)
         return " ".join(retrieved_texts)
 
     def _init_llm_engine(self) -> None:
-        """_summary_"""
+        """Initialize LLM engine."""
         if self.llm_engine is None:
             self.llm_engine = LLMEngine(llm_model=LLM_MODEL, llm_api_base=LLM_API_BASE)
 
     def _get_llm_prompt(self, prompt_template: str, context: str) -> str:
-        """_summary_
+        """
+        Create a LLM prompt based on inputs required by prompt_template.
 
         Args:
-            prompt_template: _description_
-            context: _description_
+            prompt_template: Input prompt template
+            context: Context to be added to the prompt template.
 
         Returns:
-            _description_
+            LLM prompt.
+
         """
         llm_prompt = Template(prompt_template)
         if set(llm_prompt.get_identifiers()) == set(["context", "query"]):
@@ -122,7 +137,8 @@ class RetrievalEngine:
             return llm_prompt.substitute(query=self.query)
 
     def pretty_table(self, results_dict: dict) -> None:
-        """Create a Table using `rich` library to summarize the outputs.
+        """
+        Create a Table using `rich` library to summarize the outputs.
 
         Table prints three pieces of information
         1. Retrieval strategy
@@ -132,6 +148,7 @@ class RetrievalEngine:
         Args:
             results_dict: Dictionary containing information about
                 retrieval strategy, corresponding trust score and llm response.
+
         """
         from rich.console import Console
         from rich.table import Table
@@ -150,7 +167,8 @@ class RetrievalEngine:
     def get_llm_response(
         self, context: str, prompt_template: str, max_tokens: int, system_prompt: str
     ) -> tuple[str, str]:
-        """Get LLM response for given prompt.
+        """
+        Get LLM response for given prompt.
 
         Construct LLM prompt using prompt_template for given context
         and input query.
@@ -164,6 +182,7 @@ class RetrievalEngine:
 
         Returns:
             A tuple of strings containing llm prompt and response.
+
         """
         llm_prompt = self._get_llm_prompt(
             prompt_template=prompt_template, context=context
@@ -180,7 +199,8 @@ class RetrievalEngine:
         return llm_prompt, llm_response
 
     def calculate_uncertainity(self, prompt: str, response: str) -> float:
-        """Provided a uncertainity score for LLM response and prompt.
+        """
+        Provide a uncertainity score for LLM response and prompt.
 
         There are various approaches to get a score such as
         Trustworthy Language Model, BSDetector, SelfCheckGPT, or Prometheus 2.
@@ -194,6 +214,7 @@ class RetrievalEngine:
         Returns:
             Uncertainity score.
             If DEBUG_WITHOUT_LLM is set, return 0 score.
+
         """
         if DEBUG_WITHOUT_LLM:
             return 0
@@ -220,9 +241,10 @@ class RetrievalEngine:
         max_tokens: int = MAX_OUTPUT_TOKENS,
         system_prompt: str = LLM_SYSTEM_PROMPT,
     ) -> str:
-        """Provide a LLM response based on uncertaininty score and retrieval strategies.
+        """
+        Provide a LLM response based on uncertaininty score and retrieval strategies.
 
-        We provide a list of prioritised retrieval strategies based on cost and complexity.
+        A list of prioritised retrieval strategies based on cost and complexity is provided.
         For a particular selected retrieval strategy, we estimate the trustworthiness score,
         if `TRUST_SCORE_THRESH` is not met, next retrieval strategy is used to get the response.
 
@@ -232,10 +254,13 @@ class RetrievalEngine:
         Args:
             prompt_template: Prompt template to be used for the retrieved context
                 and user question.
+            max_tokens: Maximum output token from LLM response
+            system_prompt: System prompt passed to LLM alongside user prompt
 
         Returns:
             LLM Response or STUB Response
-        """
+
+        """  # noqa: E501
         results_dict = defaultdict()
         for retrieval_strategy in RETRIEVAL_PRIORITY:
             context = self.get_context(retrieval_strategy)
@@ -258,9 +283,11 @@ class RetrievalEngine:
         return STUB_RESPONSE
 
     def agent_plan(self):
-        """Instead of user planning the retrieval strategies, an agent decides.
+        """
+        Instead of user planning the retrieval strategies, an agent decides.
 
         Raises:
             NotImplementedError: Add a agentic planner
+
         """
         raise NotImplementedError("Agentic planning not implemented.")

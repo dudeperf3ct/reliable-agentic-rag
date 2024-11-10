@@ -1,12 +1,12 @@
-# Datapipeline
+# Data pipeline
 
-The graphic below illustrates different components of the datapipeline.
+The graphic below illustrates different components of the data pipeline.
 
 ![datapipeline](../assets/datapipeline.png)
 
 First, step involves downloading the dataset. The dataset this project consists of [Triton documentation](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/contents.html#).
 
-Datapipeline consists of two components:
+Data pipeline consists of two components:
 
 1. Data Preprocessing
 2. Data Indexing
@@ -82,7 +82,7 @@ There is support for 3 embedding approaches: Dense, Sparse and Full-text.
 
 - Sparse embedding: This class uses [BGEM3EmbeddingFunction](https://milvus.io/docs/embed-with-bgm-m3.md) embedding function part of [milvus-model](https://github.com/milvus-io/milvus-model) library as sparse embedding model. Support for using other sparse models is limited.
 
-- Full-text embedding: This class uses [BM25EmbeddingFunction](https://milvus.io/docs/embed-with-bm25.md) embedding function part of [milvus-model](https://github.com/milvus-io/milvus-model) library as full-text embedding model. BM25 can generate sparse embeddings by representing documents as vectors of term importance scores, allowing for efficient retrieval and ranking in sparse vector spaces.
+- Full-text embedding (Keyword search): This class uses [BM25EmbeddingFunction](https://milvus.io/docs/embed-with-bm25.md) embedding function part of [milvus-model](https://github.com/milvus-io/milvus-model) library as full-text embedding model. BM25 can generate sparse embeddings by representing documents as vectors of term importance scores, allowing for efficient retrieval and ranking in sparse vector spaces.
 
 > [!TIP]
 > [embed.py](../agentic_rag/data_preprocess/embed.py) implements all the embedding approaches that contain functions to embed the dataset and input query.

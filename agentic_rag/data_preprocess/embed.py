@@ -1,19 +1,21 @@
 """Embedding modules."""
 
-from typing import Any
 from pathlib import Path
+from typing import Any, Optional
+
 import torch
+from loguru import logger
 from milvus_model.hybrid import BGEM3EmbeddingFunction
 from milvus_model.sparse import BM25EmbeddingFunction
 from scipy.sparse import csr_array
 from sentence_transformers import SentenceTransformer
-from loguru import logger
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 def sparse_to_dict(sparse_array: csr_array) -> dict[int, float]:
-    """Convert sparse array in csr format to a dictionary.
+    """
+    Convert sparse array in csr format to a dictionary.
 
     Args:
         sparse_array: Sparse array in csr format
@@ -31,7 +33,8 @@ def sparse_to_dict(sparse_array: csr_array) -> dict[int, float]:
 
 
 class EmbedChunks:
-    """Embedding class using SentenceTransformer library.
+    """
+    Embedding class using SentenceTransformer library.
 
     Attributes:
         embedding_model: Embedding model loaded using
@@ -41,7 +44,8 @@ class EmbedChunks:
     """
 
     def __init__(self, model_name: str, batch_size: int = 128) -> None:
-        """Init function for EmbedChunks class.
+        """
+        Init function for EmbedChunks class.
 
         Args:
             model_name: Model name compatible with sentence
@@ -55,7 +59,8 @@ class EmbedChunks:
         self.batch_size = batch_size
 
     def __call__(self, batch: dict[str, Any]) -> dict[str, Any]:
-        """Run inference for one batch.
+        """
+        Run inference for one batch.
 
         Args:
             batch: Batch containing text
@@ -74,13 +79,15 @@ class EmbedChunks:
         }
 
     def embed_query(self, query: str) -> list[float]:
-        """Get embedding for query.
+        """
+        Get embedding for query.
 
         Args:
             query: Query from user.
 
         Returns:
             List of floats as embedding vector.
+
         """
         return self.embedding_model.encode(
             sentences=query, batch_size=self.batch_size, device=DEVICE
@@ -88,7 +95,8 @@ class EmbedChunks:
 
 
 class SparseEmbedChunks:
-    """Sparse Embedding using BGE-M3 model.
+    """
+    Sparse Embedding using BGE-M3 model.
 
     Attributes:
         sparse_embedding_model: Sparse Embedding model
@@ -97,7 +105,8 @@ class SparseEmbedChunks:
     """
 
     def __init__(self, batch_size: int = 128) -> None:
-        """Init function for SparseEmbedChunks class.
+        """
+        Init function for SparseEmbedChunks class.
 
         Args:
             batch_size: Batch size. Defaults to 128.
@@ -112,7 +121,8 @@ class SparseEmbedChunks:
         )
 
     def __call__(self, batch: dict[str, Any]) -> dict[str, Any]:
-        """Run inference for one batch.
+        """
+        Run inference for one batch.
 
         Args:
             batch: Batch containing text
@@ -135,13 +145,15 @@ class SparseEmbedChunks:
         }
 
     def embed_query(self, query: str) -> dict[int, float]:
-        """Get embedding for query.
+        """
+        Get embedding for query.
 
         Args:
             query: Query from user.
 
         Returns:
             Dictionary containing sparse embedding vector.
+
         """
         sparse_arr = self.sparse_embedding_model.encode_queries(queries=[query])
         sparse_embeddings = [
@@ -151,7 +163,8 @@ class SparseEmbedChunks:
 
 
 class FullTextEmbedChunks:
-    """Full text search using BM-25 model.
+    """
+    Full text search using BM-25 model.
 
     Attributes:
         bm25_model: BM25 Sparse Embedding model
@@ -160,13 +173,14 @@ class FullTextEmbedChunks:
     """
 
     def __init__(
-        self, corpus: list[str] = None, path: str = "models/bm25.json"
+        self, corpus: Optional[list[str]] = None, path: str = "models/bm25.json"
     ) -> None:
-        """Init function for FullTextEmbedChunks class.
+        """
+        Init function for FullTextEmbedChunks class.
 
         Args:
             corpus: List of text to be used as corpus
-                to fit bm25 model.
+                to fit bm25 model. Default to None.
             path: Path to save bm25 model
 
         """
@@ -186,7 +200,8 @@ class FullTextEmbedChunks:
             self.bm25_model.load(path=save_path)
 
     def __call__(self, batch: dict[str, Any]) -> dict[str, Any]:
-        """Run inference for one batch.
+        """
+        Run inference for one batch.
 
         Args:
             batch: Batch containing text
@@ -216,13 +231,15 @@ class FullTextEmbedChunks:
             }
 
     def embed_query(self, query: str) -> dict[int, float]:
-        """Get embedding for query.
+        """
+        Get embedding for query.
 
         Args:
             query: Query from user.
 
         Returns:
             Dictionary containing sparse embedding vector.
+
         """
         full_text_arr = self.bm25_model.encode_queries(queries=[query])
         full_text_embeddings = [

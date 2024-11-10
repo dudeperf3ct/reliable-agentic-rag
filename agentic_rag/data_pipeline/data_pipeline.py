@@ -20,7 +20,8 @@ from agentic_rag.utils import timeit
 
 @timeit
 def get_corpus(chunk_ds: Dataset) -> list[str]:
-    """Get a corpus of text to fit BM-25 model.
+    """
+    Get a corpus of text to fit BM-25 model.
 
     Args:
         chunk_ds: Chunked dataset containing text and
@@ -36,7 +37,8 @@ def get_corpus(chunk_ds: Dataset) -> list[str]:
 
 @timeit
 def build_data_pipeline() -> Dataset:
-    """Run data pipeline using Ray Data.
+    """
+    Run data pipeline using Ray Data.
 
     In this pipeline,
     1. We get all the html files for the docs dataset

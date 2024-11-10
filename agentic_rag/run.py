@@ -1,9 +1,11 @@
 """Main application entrypoint."""
 
+from typing import Optional
+
 import click
 from loguru import logger
-from typing import Optional
-from agentic_rag.configs.config import COLLECTION_NAME, TOP_K, DEFAULT_QUESTION
+
+from agentic_rag.configs.config import COLLECTION_NAME, DEFAULT_QUESTION, TOP_K
 from agentic_rag.configs.prompts import RAG_PROMPT
 from agentic_rag.data_pipeline.data_pipeline import build_data_pipeline
 from agentic_rag.data_pipeline.indexing import build_index
@@ -38,7 +40,8 @@ Examples:
     help="Input question.",
 )
 def main(pipeline: str, query_text: Optional[str] = None) -> None:
-    """Run data or query pipelines.
+    """
+    Run data or query pipelines.
 
     Args:
         pipeline: Name of the pipeline to run
@@ -47,6 +50,7 @@ def main(pipeline: str, query_text: Optional[str] = None) -> None:
     Raises:
         click.UsageError: If `query_text` is not passed when
             pipeline is in query mode.
+
     """
     if pipeline == "data":
         logger.info("Running data pipeline...")

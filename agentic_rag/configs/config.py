@@ -1,5 +1,8 @@
 """Application configuration."""
 
+## Ignore line too long
+# ruff: noqa: E501
+
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).parent.parent.parent.absolute()

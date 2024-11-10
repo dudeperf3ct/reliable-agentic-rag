@@ -8,7 +8,8 @@ from loguru import logger
 
 
 def extract_text_from_section(section) -> str:
-    """Extract text from section.
+    """
+    Extract text from section.
 
     Reference: https://github.com/ray-project/llm-applications/blob/main/rag/data.py#L8
 
@@ -32,7 +33,8 @@ def extract_text_from_section(section) -> str:
 
 
 def parse_section(section_content: str, url: str) -> dict[str, Any]:
-    """Parse the section to get back dictionay of text and source.
+    """
+    Parse the section to get back dictionay of text and source.
 
     Args:
         section_content: HTML of section.
@@ -53,7 +55,8 @@ def parse_section(section_content: str, url: str) -> dict[str, Any]:
 
 
 def parse_html(file_path: dict[str, str]) -> list[dict[str, Any]]:
-    """Parse html file.
+    """
+    Parse html file.
 
     Args:
         file_path: Path to html file
@@ -79,7 +82,8 @@ def parse_html(file_path: dict[str, str]) -> list[dict[str, Any]]:
 
 
 def chunk_text(section, chunk_size, chunk_overlap) -> dict[str, Any]:
-    """Chunk text using RecursiveCharacterTextSplitter from langchain.
+    """
+    Chunk text using RecursiveCharacterTextSplitter from langchain.
 
     Args:
         section: Text in the section
