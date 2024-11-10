@@ -13,14 +13,14 @@ Query pipeline consists of 4 different components
 
 1. **Retrieval Planner**
 2. **LLM Engine**
-3. **Unceratininty Estimator**
+3. **Uncertainity Estimator**
 4. **Retrieval Engine**
 
 The following sections examine each of these in detail.
 
 ## Retrieval Planner
 
-There are 5 retrieval strategies that retrieval planner can use to get relevant context to answer the query. These strategies have increased complexity, time and cost from No Retrieval being the simplest to HyDE Retrieval the costliest.
+There are 5 retrieval strategies that retrieval planner can use to get relevant context to answer the query. These strategies have increased complexity, time and cost from No Retrieval being the fastest/simplest to HyDE Retrieval the slowest/costliest.
 
 - **No Retrieval**
 
@@ -109,7 +109,7 @@ These retrieval priority is decided from simplest and no-cost approach (`no_retr
 
 ### Uncertainity estimator
 
-[Trustworthy Language Model](https://cleanlab.ai/blog/trustworthy-language-model/) (TLM) approach from cleanlab.ai is used to calculate a trustworthiness score for a given LLM response and LLM prompt. There is "no-free lunch" with this approach as internally it calls LLM several times to self reflect on candidate responses and providing a score based on inconsitency in comparing these responses. This process adds additional time and extra computation to the application.
+[Trustworthy Language Model](https://cleanlab.ai/blog/trustworthy-language-model/) (TLM) approach from [cleanlab.ai](https://cleanlab.ai/) is used to calculate a trustworthiness score for a given LLM response and LLM prompt. There is "no-free lunch" with this approach as internally it calls LLM several times to self reflect on candidate responses and providing a score based on inconsitency in comparing these responses. This process adds additional time and extra computation to the application.
 
 > [!IMPORTANT]
 > Get API key from here: <https://app.cleanlab.ai/account> after creating an account.
