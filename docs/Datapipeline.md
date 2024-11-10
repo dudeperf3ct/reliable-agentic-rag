@@ -8,8 +8,8 @@ First, step involves downloading the dataset. The dataset this project consists 
 
 Data pipeline consists of two components:
 
-1. Data Preprocessing
-2. Data Indexing
+1. **Data Preprocessing**
+2. **Data Indexing**
 
 The following sections examine each of these in detail.
 

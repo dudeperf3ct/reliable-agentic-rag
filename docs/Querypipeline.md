@@ -2,47 +2,47 @@
 
 The graphic below illustrates different components of the query pipeline.
 
-<figure>
+<p align="center">
 <img src="../assets/agentic_rag.webp" alt="query pipeline" title=" This is a delicious bowl of ice cream.">
 <figcaption style="text-align:center"> Image Credits: <a href="https://pub.towardsai.net/reliable-agentic-rag-with-llm-trustworthiness-estimates-c488fb1bd116">Chris Mauck </a></figcaption>
-</figure>
+</p>
 
 Once knowledge base is built using [data pipelines](./Datapipeline.md), user can send a query to get response from LLM using context retrieved from knowledge base.
 
-Query pipeline consists of 4 diffferent components
+Query pipeline consists of 4 different components
 
-1. Retrieval Planner
-2. LLM Engine
-3. Unceratininty Estimator
-4. Retrieval Engine
+1. **Retrieval Planner**
+2. **LLM Engine**
+3. **Unceratininty Estimator**
+4. **Retrieval Engine**
 
 The following sections examine each of these in detail.
 
 ## Retrieval Planner
 
-There are 5 retrieval strategies that retrieval planner can use to get relevant context to answer the query. These strategies have increased complexity, time and cost from No Retrieval being the simplest to HyDE Retrieval to the costliest.
+There are 5 retrieval strategies that retrieval planner can use to get relevant context to answer the query. These strategies have increased complexity, time and cost from No Retrieval being the simplest to HyDE Retrieval the costliest.
 
-- No Retrieval
+- **No Retrieval**
 
     No context is retrieved.
 
-- Semantic Search
+- **Semantic Search**
 
     Vector database is used to fetch similar documents to the input query in the embedding space.
 
-- Hybird Search (Semantic + Keyword Search or Sparse) with Reciprocal Rank Fusion
+- **Hybird Search (Semantic + Keyword Search or Sparse) with Reciprocal Rank Fusion**
 
     There are 3 options for Hybrid Search : Semantic + Sparse (`ENABLE_SPARSE_INDEX`), Semantic + Keyword Search (`ENABLE_FULL_TEXT_INDEX`) or Semantic + Sparse + Keyword Search (Both set to `True`) controlled by two parameters in the [config.py](../agentic_rag/configs/config.py), depending on which parameter is set to `True` or `False`. The embedding models used for these approaches are detailed in the [embedding](./Datapipeline.md#embeddings) section of data pipeline documentation.
 
     The results from these search retrieval approaches are passed to Reciprocal Rank Fusion (RRF) algorithm to further rank the documents.
 
-- Hybird Search (Semantic + Keyword Search or Sparse) with Reranker model
+- **Hybird Search (Semantic + Keyword Search or Sparse) with Reranker model**
 
     There are 3 options for Hybrid Search : Semantic + Sparse (`ENABLE_SPARSE_INDEX`), Semantic + Keyword Search (`ENABLE_FULL_TEXT_INDEX`) or Semantic + Sparse + Keyword Search (Both set to `True`) controlled by two parameters in the [config.py](../agentic_rag/configs/config.py), depending on which parameter is set to `True` or `False`. The embedding models used for these approaches are detailed in the [embedding](./Datapipeline.md#embeddings) section of data pipeline documentation.
 
     The results from these search retrieval approaches are passed to Reranker model to further rank the documents.
 
-- HyDE Retrieval
+- **HyDE Retrieval**
 
     Hypothetical Document Embeddings (Hyde) is one of the query expansion approach that uses an LLM to generate hypothetical document that are relevant to query but fake. These documents are used as input to the retriever where embedding model finds documents near to these fake documents in the embedding space.
 
@@ -54,14 +54,17 @@ There are 5 retrieval strategies that retrieval planner can use to get relevant 
 LLM Engine provides a way to get response from any LLM supported by [litellm](https://docs.litellm.ai/docs/providers) library. It allows for ease of switching to any LLM provider with 1-2 lines of code change.
 
 > [!TIP]
-> The `LLMEngine` class is implemented in [llm_engine.py](../agentic_rag/generation/llm_engine.py).<br>
-> [LLM]() configuration section shows how to change and configure various LLMs
+> The `LLMEngine` class is implemented in [llm_engine.py](../agentic_rag/generation/llm_engine.py). [LLM](#llm) configuration section shows how to configure various LLM providers with ease.
 
 ## Uncertainity Estimator
 
 Uncertainity estimator is the crux of our RAG pipeline. It quantifies how releveant and reliable the LLM response is to the input query. RAG applications suffer from significant shortcoming of producing hallucinations i.e. made up elements in their response. There exists uncertainitiy quantification techniques such as [BSDetector](https://arxiv.org/pdf/2308.16175) and [SelfCheckGPT](https://arxiv.org/pdf/2303.08896).
 
-The approaches for these techniques can be classified under grey-box methods or black-box methods. Grey-box methods have access to token-level probability in the LLMs response which can be used to generate an uncertainity score. SelfCheckGPT paper provides several approaches such as BERTScore, Question Answering, n-grams, NLI and Prompt to provide a inconsistency/hallucination score among various LLM sampled responses for same input query. BSDetector paper builds on SelfCheckGPT approach providing confident assessment based on two factors, observed consistency and self-reflection certainity. Similar to SelfCheckGPT paper, observed consistency measures uncertainity score amongst possible multiple LLM responses for same input query. Self-reflection certainity score is an estimate by LLM itself when asked to score how confident it is that original answer was correct. Overall confidence score is a combination of observed consistency and self-reflection certainity scores.
+The approaches for these techniques can be classified under grey-box methods or black-box methods. Grey-box methods have access to token-level probability in the LLMs response which can be used to generate an uncertainity score.
+
+SelfCheckGPT paper provides several approaches such as BERTScore, Question Answering, n-grams, NLI and Prompt to provide a inconsistency/hallucination score among various LLM sampled responses for same input query.
+
+BSDetector paper builds on SelfCheckGPT approach providing confident assessment based on two factors, observed consistency and self-reflection certainity. Similar to SelfCheckGPT paper, observed consistency measures uncertainity score amongst possible multiple LLM responses for same input query. Self-reflection certainity score is an estimate by LLM itself when asked to score how confident it is that original answer was correct. Overall confidence score is a combination of observed consistency and self-reflection certainity scores.
 
 > [!TIP]
 > The function `calculate_uncertainity` provides trustworthy score for a LLM response and LLM prompt in `RetrievalEngine` class [retrieval_engine.py](../agentic_rag/retrieval/retrieval_engine.py).
@@ -101,7 +104,7 @@ These retrieval priority is decided from simplest and no-cost approach (`no_retr
 
 > [!IMPORTANT]
 > Can we offload this task of manually creating a retrieval priority list to an LLM Agent? <br>
-> The current RAG setup is not a "Agentic-RAG" as we are deciding the priority list of retrieval strategies.<br>
+> The current RAG setup is not a "Agentic-RAG" as we are deciding the priority list of retrieval strategies and not an LLM agent.<br>
 > Would creating an LLM agent that decides this would make this RAG application a agentic-RAG application?
 
 ### Uncertainity estimator
@@ -117,19 +120,19 @@ There are various approaches that can be substituted in place to TLM here that w
 
 [litellm](https://docs.litellm.ai/docs/) library acts as an LLM Gateway providing ease of switching between various LLM providers. Below 3 such providers [amongst many](https://docs.litellm.ai/docs/providers) are listed.
 
-### Anthropic
+#### Anthropic provider
 
 For example, if you wanted to use any of the [Anthropic models](https://docs.litellm.ai/docs/providers/anthropic) say `claude-3.5`. The only change in the [config.py](../agentic_rag/configs/config.py) file is to change the `LLM_MODEL` parameter with the corresponding correct model name.
 
 Additionally, adding an `ANTHROPIC_API_KEY` to the `.env` file.
 
-### OpenAI
+#### OpenAI provider
 
 Similarly, if you wanted to switch using any of the [OpenAI models](https://docs.litellm.ai/docs/providers/openai). The `LLM_MODEL` parameter can be changed to `o1-mini` or `gpt-4o-mini` as the model name.
 
 This approach requries the `OPENAI_API_KEY` API key to be present in the `.env` file.
 
-### Ollama
+#### Ollama provider
 
 If you want to use any of the models supported by [Ollama](https://docs.litellm.ai/docs/providers/ollama), two parameters `LLM_MODEL` and `LLM_API_BASE` in the [config.py](../agentic_rag/configs/config.py) file should be configured. `LLM_MODEL` corresponds to the model name in Ollama, example `ollama/llama2` and `LLM_API_BASE` corresponds to where the Ollama server can be accessed, example `http://localhost:11434`.
 

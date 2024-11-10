@@ -55,7 +55,7 @@ pwd
 python agentic_rag/run.py data
 ```
 
-To know more about data pipeline, refer to the documentation on [Datapipeline](./docs/Datapipeline.md).
+Running this command creates a `milvus.db` file that acts as a knowledge base. To know more about data pipeline, refer to the documentation on [Datapipeline](./docs/Datapipeline.md).
 
 > [!TIP]
 > The documentation for parameters that can be configuration as part of data pipeline [here](./docs/Datapipeline.md#configuration).
@@ -67,9 +67,9 @@ python agentic_rag/run.py query --query-text "How to make custom layers of Tenso
 ```
 
 > [!WARNING]
-> One (or two) API key(s) should be added to the `.env` file.<br>
-> Trustworthy Language Model (TLM) by cleanlab.ai to estimate trustworthy score. Get API key from here: <https://app.cleanlab.ai/account> after creating an account.<br>
-> API key for an LLM used to generate a response.
+> One (or two) API key(s) should be added to the `.env` file.<br><br>
+> Trustworthy Language Model (TLM) by cleanlab.ai to estimate trustworthy score. Get API key from here: <https://app.cleanlab.ai/account> after creating an account.<br><br>
+> API key for an LLM is required to be added in the `.env` file.
 > If LLM is hosted locally, no API key is required. Configure only `LLM_MODEL` and `LLM_API_BASE` parameters.<br>
 > If LLM is closed-source, API key is required to be added in the `.env` file.<br>
 
