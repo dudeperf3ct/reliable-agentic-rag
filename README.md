@@ -1,6 +1,6 @@
 # Reliable Agentic RAG with LLM Trustworthiness Estimates
 
-This project is an exploration to understand RAG agents and attempt to replicate the blog titled "Reliable Agentic RAG with LLM Trustworthiness Estimates" : <https://pub.towardsai.net/reliable-agentic-rag-with-llm-trustworthiness-estimates-c488fb1bd116>
+This project is an exploration to understand RAG LLM agents and attempt to replicate the blog titled "Reliable Agentic RAG with LLM Trustworthiness Estimates" : <https://pub.towardsai.net/reliable-agentic-rag-with-llm-trustworthiness-estimates-c488fb1bd116>
 
 Tested this on machine with following configuration
 
@@ -95,15 +95,17 @@ Strictly, the approach implemented as part of this project is <u>not an agentic 
 Some questions of my own
 
 - Will this fully autonomous agentic RAG approach outperform the current semi-automated RAG approach? What are advantages of using one over the other?
-- In current RAG approach, what different approaches that can be used to replace the [uncertainity estimator](./docs/Querypipeline.md#uncertainity-estimator) component?
+- In current RAG approach, what are different approaches that can be used to replace the [uncertainity estimator](./docs/Querypipeline.md#uncertainity-estimator) component?
 - Is this RAG approach reliable and robust to all scenarios?
 
 ## Recommended Readings
 
-- <https://pub.towardsai.net/reliable-agentic-rag-with-llm-trustworthiness-estimates-c488fb1bd116>
-- <https://vectorize.io/how-i-finally-got-agentic-rag-to-work-right/>
+- [Reliable Agentic RAG with LLM Trustworthiness Estimates](https://pub.towardsai.net/reliable-agentic-rag-with-llm-trustworthiness-estimates-c488fb1bd116)
+- [How I finally got agentic RAG to work right](https://vectorize.io/how-i-finally-got-agentic-rag-to-work-right/)
 
 ## Further work
 
+- [ ] Implement [Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) by Anthropic. It will require changes to data pipeline logic.
+- [ ] Support for GraphRAG, Query Rewriting or Multi-Hop RAG as an additional retrieval strategy
 - [ ] Implement a [agentic RAG processing loop](https://vectorize.io/how-i-finally-got-agentic-rag-to-work-right/) (explained in Agentic RAG processing loop section of the link)
 - [ ] Make configuration more intutive (using `pydantic`)
